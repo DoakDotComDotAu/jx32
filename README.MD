@@ -43,5 +43,8 @@ To run `confui`, run `python -m jx32_confui`<br>
 
 You can also run `./run.sh`.
 
+## Gallery
+<img src="md/thumb.png"/>
+
 # Credits
 Main Developer: <a href="https://elliotd.au/site">ElliotD.Au</a>
