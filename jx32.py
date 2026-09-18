@@ -13,14 +13,8 @@ cfg = JxConfig("jx32.json")
 HEADERS = {"X-Emby-Token": cfg.jf_api}
 
 def get_raw_elements():
-    """Bypass JxConfig to grab the new absolute elements directly from the JSON."""
-    try:
-        with open("jx32.json", "r") as f:
-            data = json.load(f)
-        return data.get("scenes", {}).get("up_next", {}).get("elements", {})
-    except Exception as e:
-        print(f"Failed to read raw elements: {e}")
-        return {}
+    """Reads elements directly from cfg.data to avoid CWD path mismatches."""
+    return cfg.data.get("scenes", {}).get("up_next", {}).get("elements", {})
 
 # ─── Jellyfin Helpers ─────────────────────────────────────────────────────────
 
@@ -35,7 +29,7 @@ def get_playlist_items():
         headers=HEADERS,
         params={
             "api_key": cfg.jf_api,
-            "Fields": "MediaSources,Overview,SeriesName",
+            "Fields": "MediaSources,Overview,SeriesName,SeriesId",
             "UserId": get_user_id(),
         }
     )
@@ -52,15 +46,26 @@ def get_stream_url(item_id):
         f"&MaxHeight={cfg.height}"
     )
 
-def get_thumbnail(item_id, width=700):
-    for img_type in ("Primary", "Backdrop"):
-        r = requests.get(
-            f"{cfg.jf_url}/Items/{item_id}/Images/{img_type}",
-            headers=HEADERS,
-            params={"api_key": cfg.jf_api, "width": width},
-        )
-        if r.status_code == 200:
-            return Image.open(io.BytesIO(r.content))
+def get_thumbnail(item_id, series_id=None, width=700):
+    targets = [(item_id, "Primary"), (item_id, "Backdrop")]
+    if series_id:
+        targets.extend([(series_id, "Primary"), (series_id, "Backdrop")])
+
+    for target_id, img_type in targets:
+        try:
+            r = requests.get(
+                f"{cfg.jf_url}/Items/{target_id}/Images/{img_type}",
+                headers=HEADERS,
+                params={"api_key": cfg.jf_api, "width": width},
+                timeout=5
+            )
+            if r.status_code == 200:
+                print(f"  [Thumb] Loaded {img_type} image for ID: {target_id}")
+                return Image.open(io.BytesIO(r.content))
+        except Exception as e:
+            print(f"  [Thumb Error] Failed {img_type} for {target_id}: {e}")
+
+    print(f"  [Thumb Warning] No image available for item {item_id}")
     return None
 
 def format_duration(ticks):
@@ -299,13 +304,13 @@ def wipe_out_to_left(sock, frame):
 
 # ─── Up Next Flow ─────────────────────────────────────────────────────────────
 
-def show_up_next_overlay(sock, title, series_title, duration_ticks, item_id):
+def show_up_next_overlay(sock, title, series_title, duration_ticks, item_id, series_id=None):
     scene = cfg.get_up_next_scene()
     elements = get_raw_elements()
     duration = scene.get("duration", 10)
 
     print(f"  Up Next: {title}")
-    thumb = get_thumbnail(item_id, width=700)
+    thumb = get_thumbnail(item_id, series_id=series_id, width=700)
     frame = make_up_next_frame(title, series_title, duration_ticks, thumb)
     
     wipe_in_from_right(sock, frame)
@@ -375,13 +380,14 @@ def main():
         while True:
             for item in items:
                 item_id = item["Id"]
+                series_id = item.get("SeriesId")
                 title = item.get("Name", "Unknown")
                 series_title = item.get("SeriesName", "")
                 duration_ticks = item.get("RunTimeTicks", 0)
                 stream_url = get_stream_url(item_id)
 
                 drain_socket(sock)
-                show_up_next_overlay(sock, title, series_title, duration_ticks, item_id)
+                show_up_next_overlay(sock, title, series_title, duration_ticks, item_id, series_id=series_id)
 
                 print(f"Now Playing: {title}")
                 drain_socket(sock)

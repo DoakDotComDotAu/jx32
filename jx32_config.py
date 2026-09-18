@@ -1,11 +1,27 @@
+import os
 import json
 from PIL import ImageFont
 
 class JxConfig:
-    def __init__(self, config_path="jx32.json"):
-        with open(config_path, "r") as f:
-            self.data = json.load(f)
+    def __init__(self, config_path=None):
+        base_dir = os.path.dirname(os.path.abspath(__file__))
 
+        # If path is None, default, or relative, resolve relative to script directory
+        if config_path is None:
+            config_path = os.path.join(base_dir, "jx32.json")
+        elif not os.path.isabs(config_path):
+            candidate = os.path.join(base_dir, config_path)
+            if os.path.exists(candidate):
+                config_path = candidate
+
+        self.config_path = os.path.abspath(config_path)
+
+        if not os.path.exists(self.config_path):
+            raise FileNotFoundError(f"Config file not found at expected location: {self.config_path}")
+
+        with open(self.config_path, "r") as f:
+            self.data = json.load(f)
+              
         # Server
         self.jf_url = self.data["server"]["url"]
         self.jf_api = self.data["server"]["api_key"]
@@ -42,7 +58,22 @@ class JxConfig:
 
     def get_up_next_scene(self):
         """Processes the Up Next JSON scene into usable layout coordinates and RGBA tuples."""
-        scene = self.data["scenes"]["up_next"]
+        scenes = self.data.get("scenes", {})
+        if "up_next" not in scenes:
+            raise KeyError(f"'up_next' missing from 'scenes' in {self.config_path}")
+
+        scene = scenes["up_next"]
+        
+        if "layout" not in scene:
+            keys_found = list(scene.keys())
+            raise KeyError(
+                f"Missing 'layout' block in 'scenes.up_next' ({self.config_path}). "
+                f"Keys found in scene: {keys_found}"
+            )
+
+        if "colors" not in scene:
+            raise KeyError(f"Missing 'colors' block in 'scenes.up_next' ({self.config_path})")
+
         l = scene["layout"]
         c = scene["colors"]
         s = self.scale
@@ -82,8 +113,8 @@ class JxConfig:
         }
 
         return {
-            "duration": scene["duration"],
-            "animations": scene["animations"],
+            "duration": scene.get("duration", 5),
+            "animations": scene.get("animations", {}),
             "colors": colors,
             "layout": layout
         }
