@@ -1,0 +1,149 @@
+{
+  "server": {
+    "url": "http://YOUR_JELLYFIN_SERVER:8096",
+    "api_key": "YOUR_API_KEY",
+    "playlist_id": "YOUR_PLAYLIST_ID"
+  },
+  "display": {
+    "width": 1280,
+    "height": 720,
+    "fullscreen": false,
+    "mpv_socket": "/tmp/mpv_broadcast.sock",
+    "base_resolution": 1080
+  },
+  "fonts": {
+    "bold": "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+    "regular": "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+  },
+  "scenes": {
+    "up_next": {
+      "duration": 5,
+      "animations": {
+        "wipe_in_steps": 30,
+        "wipe_in_duration": 0.5,
+        "wipe_out_steps": 30,
+        "wipe_out_duration": 0.4
+      },
+      "colors": {
+        "bg_gradient_start": 10,
+        "bg_gradient_end": 35,
+        "accent": [
+          229,
+          9,
+          20,
+          255
+        ],
+        "text_primary": [
+          255,
+          255,
+          255,
+          255
+        ],
+        "text_secondary": [
+          170,
+          170,
+          170,
+          255
+        ],
+        "countdown": [
+          160,
+          160,
+          160,
+          255
+        ],
+        "bar_track": [
+          50,
+          50,
+          50,
+          255
+        ]
+      },
+      "layout": {
+        "accent_x": 60,
+        "accent_w": 8,
+        "accent_y_pad": 180,
+        "content_x": 94,
+        "tag_y": 210,
+        "title_y": 280,
+        "duration_y": 460,
+        "bar_bottom_pad": 105,
+        "bar_h": 8,
+        "countdown_bottom_pad": 155,
+        "thumb_x_offset": 62,
+        "thumb_y_pad": 232,
+        "half_width_pad": 120
+      },
+      "elements": {
+        "accent": {
+          "type": "rect",
+          "x": 60,
+          "y": 180,
+          "w": 8,
+          "h": 720,
+          "color": "#e50914"
+        },
+        "tag": {
+          "type": "text",
+          "x": 90,
+          "y": 210,
+          "w": 600,
+          "h": 40,
+          "text": "UP NEXT ON TTC TV",
+          "color": "#e50914"
+        },
+        "title": {
+          "type": "text",
+          "x": 90,
+          "y": 280,
+          "w": 600,
+          "h": 80,
+          "text": "Video Title Here",
+          "color": "#ffffff"
+        },
+        "series_title": {
+          "type": "text",
+          "x": 94,
+          "y": 434,
+          "w": 600,
+          "h": 40,
+          "text": "",
+          "color": "#aaaaaa"
+        },
+        "duration": {
+          "type": "text",
+          "x": 94,
+          "y": 486,
+          "w": 600,
+          "h": 40,
+          "text": "Duration: 24:00",
+          "color": "#aaaaaa"
+        },
+        "bar": {
+          "type": "rect",
+          "x": 90,
+          "y": 975,
+          "w": 840,
+          "h": 8,
+          "color": "#323232"
+        },
+        "countdown": {
+          "type": "text",
+          "x": 90,
+          "y": 925,
+          "w": 200,
+          "h": 30,
+          "text": "Starting in 5s",
+          "color": "#aaaaaa"
+        },
+        "thumb": {
+          "type": "rect",
+          "x": 1081,
+          "y": 92,
+          "w": 737,
+          "h": 882,
+          "color": "#222222"
+        }
+      }
+    }
+  }
+}
